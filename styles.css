@@ -1,0 +1,525 @@
+/*
+  GOLDSMITH & CO — Cube hero (standalone build)
+  ==============================================
+  One fixed viewport, no vertical scroll anywhere. Scroll input turns
+  synced Y-axis "cubes" (bands) carrying the two layout states on
+  adjacent faces; the photo never moves. script.js drives every
+  [data-gc-assembly] transform; this file owns layout + face content.
+
+  Type is matched to the state mockups: Roboto for the wordmark /
+  names / "You're invited", Roboto Condensed Bold for the eyebrow,
+  invite body, and CTA (the mockups' narrow glyphs are condensed cuts).
+
+  Alignment conventions (mockup-corrected):
+  - Every accent rule is centered under its own text line at 58% of the
+    text's width, via a fit-content wrapper (.gc-upair). This keeps all
+    rules parallel and consistently proportioned — the fix for the
+    left-aligned fixed-width rules the previous build had.
+*/
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;             /* the page NEVER scrolls */
+  overscroll-behavior: none;    /* no rubber-band bounce */
+}
+
+body {
+  font-family: "Roboto", "Helvetica Neue", Arial, sans-serif;
+  background: #fff;
+  color: var(--gc-ink);
+  touch-action: none;           /* swipes feed the cube, not the scroller */
+}
+
+:root {
+  --gc-font: "Roboto", "Helvetica Neue", Arial, sans-serif;
+  --gc-font-cond: "Roboto Condensed", "Arial Narrow", Arial, sans-serif;
+  --gc-red: #e8151b;
+  --gc-ink: #101010;
+
+  /* Foreground placement inside the photo frame. NOT hand-tuned: these
+     are solved numerically against custom-reference.jpg (mask-overlap fit
+     of the fg PNG's alpha against the man's diff-mask in the reference),
+     so the fg/bg scale relationship matches the reference composite.
+     If either source image is regenerated, re-derive these. */
+  --gc-fg-width: 85.4%;
+  --gc-fg-right: 11.6%;
+  --gc-fg-top: 26%;
+
+  /* 3D room box — set in px by script.js from the frame's measured width:
+     --gc-p = perspective (2.6 × frame width), --gc-depth = box depth
+     (0.62 × frame width). Unset (no-JS / reduced motion) they collapse to
+     0 and the room renders as the flat photo. */
+  --gc-p: 1200px;
+  --gc-depth: 0px;
+  /* Forward extension of each wall PAST the frame plane (z > 0). At rest
+     it projects outside the frame and is clipped; when the room dollies
+     back it covers the ring between the frame edge and the box mouth,
+     which otherwise opens as a flat gap. Must exceed T_MAX/K. */
+  --gc-ext: 0px;
+}
+
+/* ---------------------------------------------------------------------
+   1. Stage — the single fixed screen
+--------------------------------------------------------------------- */
+.gc-stage {
+  height: 100svh;
+  width: 100%;
+  display: grid;
+  overflow: hidden;
+}
+
+/* Desktop: copy column left, photo column right */
+@media (min-width: 900px) {
+  .gc-stage {
+    grid-template-columns: 1.1fr 1fr;
+    align-items: stretch;
+    gap: clamp(1.5rem, 3vw, 4rem);
+    padding-inline: clamp(2rem, 5vw, 5rem);
+  }
+  .gc-mobile { display: none !important; }
+}
+
+/* Mobile: strip / photo / strip, stacked.
+   Row heights measured off the mobile state mockups (1125×2436):
+   photo occupies 24.5%–64.5% of screen height; everything below the
+   photo (caption, invite, CTA, mirrored wordmark) lives in the rest. */
+@media (max-width: 899.98px) {
+  .gc-stage {
+    grid-template-rows: 24.5svh 40svh minmax(0, 1fr);
+    grid-template-columns: 1fr;
+  }
+  .gc-desktop { display: none !important; }
+  .gc-col--mtop  { grid-row: 1; }
+  .gc-col--photo { grid-row: 2; }
+  .gc-col--mbot  { grid-row: 3; }
+}
+
+.gc-col { position: relative; min-height: 0; }
+
+/* ---------------------------------------------------------------------
+   2. Bands — the cubes. script.js positions faces on a Y-axis carousel
+   of radius r = bandWidth/2 and rotates each assembly in sync.
+--------------------------------------------------------------------- */
+.gc-band {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  perspective: 1300px;
+}
+
+.gc-band__assembly {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.gc-band__face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #fff; /* faces are opaque — the turning cube reads as solid */
+}
+
+/* ---------------------------------------------------------------------
+   3. Shared type + the aligned rule pairs
+--------------------------------------------------------------------- */
+.gc-upair { width: fit-content; }
+.gc-upair--center { margin-inline: auto; text-align: center; }
+
+.gc-rule {
+  width: 50%; /* measured off the mockups: rules run ~half their text's width */
+  /* 0.9rem matches the ref's text→rule distance, and every text↔rule gap
+     uses the same value so the lines sit symmetrically around the copy —
+     the below-rule was previously tighter than the above gap. */
+  margin: 0.9rem auto 0;
+  border: none;
+  border-top: 1.5px solid var(--gc-ink);
+}
+.gc-rule--above { margin: 0 auto 0.9rem; }
+/* --b marks the bottom rule of a pair: ~80% the top rule's width — the
+   subtle taper both mockups draw between the upper and lower lines. */
+.gc-rule--b { width: 40%; }
+.gc-rule--solo { width: 26vw; margin: 1.1rem auto; border: none; border-top: 1.5px solid var(--gc-ink); }
+
+.gc-wordmark {
+  font-family: var(--gc-font);
+  font-weight: 700;
+  color: var(--gc-red);
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.gc-name {
+  font-family: var(--gc-font);
+  font-weight: 700;
+  color: var(--gc-ink);
+  margin: 0;
+}
+.gc-address {
+  font-family: var(--gc-font);
+  font-weight: 400;
+  color: var(--gc-ink);
+  margin: 0;
+}
+
+.gc-eyebrow {
+  font-family: var(--gc-font-cond);
+  font-weight: 700;
+  color: var(--gc-red);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.gc-invite-lead {
+  font-family: var(--gc-font);
+  font-weight: 700;
+  color: var(--gc-ink);
+  margin: 0 0 0.35em;
+}
+.gc-invite-body {
+  font-family: var(--gc-font-cond);
+  font-weight: 700;
+  color: var(--gc-red);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.gc-cta {
+  font-family: var(--gc-font-cond);
+  font-weight: 700;
+  text-transform: lowercase;
+  text-decoration: none;
+  color: var(--gc-ink);
+  border: 2px solid var(--gc-ink);
+  width: fit-content;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.gc-cta:hover,
+.gc-cta:focus-visible {
+  background: var(--gc-ink);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------------
+   4. Desktop faces
+--------------------------------------------------------------------- */
+.gc-face--d1 {
+  justify-content: flex-start;
+  padding-top: clamp(2rem, 9vh, 5rem);
+}
+.gc-face--d1 .gc-wordmark { font-size: clamp(3.4rem, 7.6vw, 6.6rem); }
+.gc-face--d1 .gc-idblock { margin-top: clamp(2.5rem, 13vh, 7rem); }
+.gc-face--d1 .gc-name { font-size: clamp(1.35rem, 2.2vw, 1.95rem); }
+.gc-face--d1 .gc-address { font-size: clamp(1.05rem, 1.75vw, 1.55rem); margin-top: 0.9rem; /* = rule margin → rule→text = text→rule */ }
+
+.gc-face--d2 {
+  justify-content: space-between;
+  padding-block: clamp(2rem, 9vh, 5rem) clamp(2rem, 7vh, 4rem);
+}
+.gc-face--d2 .gc-eyebrow { font-size: clamp(2rem, 3.6vw, 3.1rem); }
+.gc-face--d2 .gc-invite-lead { font-size: clamp(2rem, 3.3vw, 2.9rem); }
+.gc-face--d2 .gc-invite-body { font-size: clamp(1.35rem, 2.3vw, 2rem); }
+.gc-face--d2 .gc-cta {
+  font-size: clamp(1.5rem, 2.5vw, 2.15rem);
+  padding: 0.5em 0;
+  width: min(100%, 27vw);
+  min-width: 16rem;
+  text-align: center;
+}
+
+/* Desktop caption strip under the photo */
+.gc-band--dcap { height: clamp(6.5rem, 16vh, 9rem); flex: none; }
+.gc-face--dcap2 { justify-content: center; }
+.gc-face--dcap2 .gc-name { font-size: clamp(1.15rem, 1.75vw, 1.5rem); }
+.gc-face--dcap2 .gc-address { font-size: clamp(0.9rem, 1.35vw, 1.2rem); }
+.gc-face--dcap2 .gc-rule--above { width: 72%; }
+.gc-face--dcap2 .gc-rule--b { width: 58%; /* 80% of the top rule — taper */ }
+
+/* ---------------------------------------------------------------------
+   5. Photo column — the interactive 3D room
+   The frame is a clipped window with its own perspective. Inside it,
+   .gc-room is a real box: the photo is the back plane at z = -depth and
+   four walls (stretched slices of the photo's own edges) run from the
+   back plane to the frame plane. script.js scales the box by
+   K = P/(P - depth) so at rest the back plane exactly fills the frame
+   and the walls lie on the view rays (invisible) — pixel-identical to
+   the flat photo. Dollying the room back (translateZ) shrinks the back
+   plane and reveals the walls at the geometrically correct angles.
+   The man (.gc-fg-wrap) sits OUTSIDE the clipped frame so he can break
+   out of it when scaled up.
+--------------------------------------------------------------------- */
+.gc-col--photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 0;
+  /* When the man breaks the frame he must ride over the copy strips in
+     the neighboring columns/rows, not slide under them. */
+  z-index: 2;
+}
+
+.gc-stagebox {
+  position: relative;
+  z-index: 2; /* above the caption band inside this column */
+  width: min(30vw, 440px);
+  aspect-ratio: 2500 / 2923;
+  flex: none;
+  /* Same perspective as the frame's interior, so the man's 3D wobble
+     shares the room's vanishing behavior. */
+  perspective: var(--gc-p);
+  perspective-origin: 50% 50%;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.gc-stagebox:active { cursor: grabbing; }
+@media (max-width: 899.98px) {
+  .gc-stagebox {
+    width: auto;
+    height: 100%;
+    max-width: 78vw; /* ref photo is 74vw wide on a 375pt screen */
+    aspect-ratio: 2500 / 2923;
+    margin-inline: auto;
+  }
+}
+
+.gc-frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #b9b3a8; /* seam-gap safety color ≈ the photo's wall */
+  perspective: var(--gc-p);
+  perspective-origin: 50% 50%;
+}
+/* The "surprise" state: slight defocus + dim on the receded room — a
+   cheap depth-of-field cue while the man is out of the frame. */
+.gc-frame { transition: filter 0.45s ease; }
+.gc-surprised .gc-frame { filter: blur(1.6px) brightness(0.96); }
+
+.gc-room {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.gc-room__back {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(calc(var(--gc-depth) * -1));
+}
+.gc-room__back .gc-layer--bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* bg framing == reference framing → no extra scale */
+}
+
+/* Walls: each shows a thin edge-slice of the photo stretched across the
+   box depth (ambient extension). The slice's outermost row/column meets
+   the back plane's matching edge, so the seam is continuous; toward the
+   camera it smears into streaks — on the floor the plank seams become
+   lines receding in z, which is exactly what a real floor does. A soft
+   gradient darkens each wall toward the camera to shade the box. */
+.gc-room__wall {
+  position: absolute;
+  background-repeat: no-repeat;
+  backface-visibility: hidden;
+}
+.gc-room__wall--left,
+.gc-room__wall--right {
+  top: 0;
+  height: 100%;
+  width: calc(var(--gc-depth) + var(--gc-ext));
+}
+/* Each wall's transform: the inner translate slides the plane along its
+   own axis by the extension BEFORE the fold, so the folded wall runs
+   from z = +ext (in front of the frame, clipped at rest) back to
+   z = −depth (the back plane's edge). */
+.gc-room__wall--left {
+  left: 0;
+  transform-origin: 0 0;
+  transform: rotateY(90deg) translateX(calc(var(--gc-ext) * -1));
+  background-image:
+    linear-gradient(to right, rgba(10, 8, 5, 0.2), rgba(10, 8, 5, 0) 50%),
+    url("/assets/jacob-background.png");
+  background-size: auto, 14000% 100%;
+  background-position: 0 0, left top;
+}
+.gc-room__wall--right {
+  right: 0;
+  transform-origin: 100% 0;
+  transform: rotateY(-90deg) translateX(var(--gc-ext));
+  background-image:
+    linear-gradient(to left, rgba(10, 8, 5, 0.2), rgba(10, 8, 5, 0) 50%),
+    url("/assets/jacob-background.png");
+  background-size: auto, 14000% 100%;
+  background-position: 0 0, right top;
+}
+.gc-room__wall--top,
+.gc-room__wall--bottom {
+  left: 0;
+  width: 100%;
+  height: calc(var(--gc-depth) + var(--gc-ext));
+}
+.gc-room__wall--top {
+  top: 0;
+  transform-origin: 50% 0;
+  transform: rotateX(-90deg) translateY(calc(var(--gc-ext) * -1));
+  background-image:
+    linear-gradient(to bottom, rgba(10, 8, 5, 0.18), rgba(10, 8, 5, 0) 50%),
+    url("/assets/jacob-background.png");
+  background-size: auto, 100% 20000%;
+  background-position: 0 0, left top;
+}
+.gc-room__wall--bottom {
+  bottom: 0;
+  transform-origin: 50% 100%;
+  transform: rotateX(90deg) translateY(var(--gc-ext));
+  background-image:
+    linear-gradient(to top, rgba(10, 8, 5, 0.18), rgba(10, 8, 5, 0) 50%),
+    url("/assets/jacob-background.png");
+  background-size: auto, 100% 6000%;
+  background-position: 0 0, left bottom;
+}
+
+/* Live shadow: a soft dark ellipse over the photo's baked floor shadow.
+   It lives on the back plane, so it recedes with the room. Opacity 0 at
+   perfect rest (the baked shadow already looks right); script.js adds a
+   few percent of darkening in step with the man's sink/press-back, which
+   makes the floor answer his motion. */
+.gc-room__shadow {
+  position: absolute;
+  left: 8%;
+  right: 24%;
+  top: 68%;
+  bottom: 8%;
+  background: radial-gradient(
+    50% 42% at 46% 50%,
+    rgba(26, 17, 8, 0.6),
+    rgba(26, 17, 8, 0.24) 48%,
+    rgba(26, 17, 8, 0) 74%
+  );
+  opacity: 0;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* Dimmer above the room, below the man: fades in as the room recedes. */
+.gc-room-dim {
+  position: absolute;
+  inset: 0;
+  background: #06070a;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gc-fg-wrap {
+  position: absolute;
+  width: var(--gc-fg-width);
+  right: var(--gc-fg-right);
+  top: var(--gc-fg-top);
+  transform-origin: 58% 44%; /* ≈ his torso / center of mass */
+  will-change: transform;
+  z-index: 2;
+}
+.gc-layer--fg {
+  display: block;
+  width: 100%;
+  height: auto;
+  -webkit-user-drag: none;
+}
+
+/* ---------------------------------------------------------------------
+   6. Mobile faces
+--------------------------------------------------------------------- */
+/* Mockup-measured mobile geometry (all numbers from mobile-state-*.png
+   at 1125×2436): wordmark 18vw at line-height 1.27, shifted -2.5vw left
+   and pulled up so the first line's caps crop at the screen's top edge —
+   the type bleeds off TOP, LEFT, and RIGHT, exactly as designed. */
+.gc-face--m1t { justify-content: flex-start; overflow: visible; }
+.gc-wordmark--bleed {
+  font-size: 18vw;
+  line-height: 1.27;
+  white-space: nowrap;
+  margin: -0.34em 0 0 -2.5vw;
+}
+
+/* Eyebrow: 7.5vw, top-anchored ~4% down, left padding ~10.5vw (ref x=120/1125) */
+.gc-face--m2t { justify-content: flex-start; padding: 3.9svh 8vw 0 10.5vw; }
+.gc-face--m2t .gc-eyebrow { font-size: 7.5vw; line-height: 1.2; }
+
+/* Caption sits immediately under the photo (name at 67% screen height
+   in the ref — ~2.5% below the photo's bottom edge), not centered in
+   whatever space is left. */
+.gc-face--m1b { justify-content: flex-start; padding-top: 2.4svh; text-align: center; }
+.gc-face--m1b .gc-name { font-size: 5.5vw; }
+.gc-face--m1b .gc-address { font-size: 4.5vw; margin-top: 0.9rem; /* = rule margin → symmetric above/below */ }
+
+/* Mirrored wordmark: same cut as the top one; ref shows ~1.9 lines
+   visible from 84% screen height down, cropped by the bottom edge. */
+.gc-mirror {
+  position: absolute;
+  left: 50%;
+  bottom: -0.6em;
+  transform: translateX(-50%) rotate(180deg);
+  font-family: var(--gc-font);
+  font-weight: 700;
+  color: var(--gc-red);
+  font-size: 18vw;
+  line-height: 1.27;
+  white-space: nowrap;
+  text-align: left;
+  margin: 0;
+  pointer-events: none;
+}
+
+/* space-between (not fixed margins): the gaps between groups compress on
+   short phones instead of shoving the CTA past the bottom edge, and the
+   2svh bottom padding pins the CTA fully inside the viewport — the ref
+   has it ending ~2% above the screen's bottom. */
+.gc-face--m2b { justify-content: space-between; text-align: center; padding: 2.4svh 7vw 2svh; }
+.gc-face--m2b .gc-name { font-size: 5.5vw; }
+.gc-invite-lead--m { color: var(--gc-red); font-size: 6.2vw; margin: 0; }
+.gc-invite-body--m { color: var(--gc-ink); font-size: 4.8vw; line-height: 1.3; margin: 0; }
+.gc-face--m2b .gc-rule--solo { margin: 0 auto; }
+.gc-face--m2b .gc-cta {
+  margin-inline: auto;
+  font-size: 5vw;  /* ref: box is 50vw wide, ~5svh tall — was oversized */
+  padding: 0.45em 0;
+  width: min(50vw, 17rem);
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------------
+   7. Reduced motion — no 3D; script.js crossfades faces instead.
+--------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .gc-band { perspective: none; }
+  .gc-band__assembly { transform: none !important; }
+  .gc-band__face { transition: opacity 0.35s ease; }
+}
+
+/* ---------------------------------------------------------------------
+   8. No-JS fallback — no cube exists, so let the page be an ordinary
+   scrollable document with both states stacked in reading order.
+--------------------------------------------------------------------- */
+.no-js html, .no-js body { overflow: auto; }
+.no-js body { touch-action: auto; }
+.no-js .gc-stage { height: auto; display: block; padding: 2rem clamp(1.5rem, 6vw, 4rem); }
+.no-js .gc-band { perspective: none; height: auto; }
+.no-js .gc-band__assembly { position: static; }
+.no-js .gc-band__face { position: static; margin-bottom: 3rem; }
+.no-js .gc-mirror { display: none; }
+.no-js .gc-stagebox { width: min(88vw, 440px); height: auto; }

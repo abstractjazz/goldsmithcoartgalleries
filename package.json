@@ -1,0 +1,11 @@
+{
+  "name": "goldsmith-co-hero",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Goldsmith & Co. Art Galleries — standalone cube hero",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs"
+  }
+}

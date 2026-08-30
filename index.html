@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Goldsmith &amp; Co. Art Galleries</title>
+<meta name="description" content="We're flipping the paradigm for artists and art lovers. Goldsmith & Co. Art Galleries, 1926 W North Ave, Baltimore, MD." />
+
+<script>document.documentElement.classList.remove("no-js");</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&family=Roboto+Condensed:wght@700&display=swap" rel="stylesheet" />
+
+<link rel="preload" as="image" href="/assets/jacob-background.png" fetchpriority="high" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+
+<!--
+  CUBE PAGE — there is no vertical scroll on this page at all.
+  Scroll input (wheel / touch swipe / arrow keys) turns "cubes" whose
+  adjacent faces carry the two layout states; the photo stays in place
+  (its own tap/drag interactions live inside the stagebox).
+  Every band below is one synced cube: desktop has the copy column and
+  the small caption strip under the photo; mobile has the strip above
+  the photo and the strip below it. Faces with the same data-face number
+  show the same state and turn in lockstep, driven by script.js.
+
+  Content is intentionally duplicated between the desktop-only and
+  mobile-only bands — the two breakpoints distribute the same copy
+  differently (per the state mockups), and this is a hardcoded
+  single-purpose page, so duplication beats indirection.
+-->
+<main class="gc-stage" data-gc-hero data-gc-state="1">
+
+  <!-- ============ DESKTOP: left copy column (cube) ============ -->
+  <div class="gc-col gc-col--copy gc-desktop">
+    <div class="gc-band gc-band--copy" data-gc-band>
+      <div class="gc-band__assembly" data-gc-assembly>
+
+        <div class="gc-band__face gc-face--d1" data-gc-face="1">
+          <h1 class="gc-wordmark">GOLDSMITH<br />&amp; CO</h1>
+          <!-- One shared pair, not two: both rules center on the same
+               axis (the block's width) instead of each on its own text's
+               width, which left the bottom rule askew. --b = the taper. -->
+          <div class="gc-idblock">
+            <div class="gc-upair">
+              <p class="gc-name">Goldsmith &amp; Co. Art Galleries</p>
+              <hr class="gc-rule" />
+              <p class="gc-address">1926 W North Ave, Baltimore, MD</p>
+              <hr class="gc-rule gc-rule--b" />
+            </div>
+          </div>
+        </div>
+
+        <div class="gc-band__face gc-face--d2" data-gc-face="2">
+          <p class="gc-eyebrow">We&rsquo;re flipping the paradigm<br />for artists and art lovers</p>
+          <div class="gc-invite">
+            <p class="gc-invite-lead">You&rsquo;re invited</p>
+            <p class="gc-invite-body">to a completely new experience<br />in owning and selling fine art.</p>
+          </div>
+          <a class="gc-cta" href="https://goldsmithcoartgalleries.com/welcome#gc-join-list" data-gc-cta>join our list</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MOBILE: strip above the photo (cube) ============ -->
+  <div class="gc-col gc-col--mtop gc-mobile">
+    <div class="gc-band gc-band--mtop" data-gc-band>
+      <div class="gc-band__assembly" data-gc-assembly>
+
+        <div class="gc-band__face gc-face--m1t" data-gc-face="1">
+          <p class="gc-wordmark gc-wordmark--bleed">GOLDSMITH<br />&amp; CO</p>
+        </div>
+
+        <div class="gc-band__face gc-face--m2t" data-gc-face="2">
+          <p class="gc-eyebrow">We&rsquo;re flipping the<br />paradigm for artists<br />and art lovers.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SHARED: the photo — an interactive 3D room ============
+       The frame is a window into a shallow 3D box: the photo is the box's
+       back wall, and four side planes (textured with stretched slices of
+       the photo's own edges) extend the room in z. At rest the box is
+       scaled so it renders pixel-identical to the flat photo (side walls
+       sit exactly on the view rays — invisible). Tap the man → water-float
+       wobble. Drag any direction → the room dollies back and the man
+       scales up, breaking the frame past the surprise threshold.
+       script.js drives [data-gc-room] and [data-gc-fg-wrap]. -->
+  <div class="gc-col gc-col--photo">
+    <div class="gc-stagebox" data-gc-stage>
+      <div class="gc-frame" data-gc-frame>
+        <div class="gc-room" data-gc-room>
+          <div class="gc-room__back">
+            <img class="gc-layer gc-layer--bg" data-gc-layer="bg" src="/assets/jacob-background.png" alt="" loading="eager" fetchpriority="high" />
+            <!-- Live layer over the photo's baked floor shadow: script.js
+                 breathes its opacity/position with the man's float so the
+                 shadow answers his motion. -->
+            <div class="gc-room__shadow" data-gc-shadow aria-hidden="true"></div>
+          </div>
+          <div class="gc-room__wall gc-room__wall--left" aria-hidden="true"></div>
+          <div class="gc-room__wall gc-room__wall--right" aria-hidden="true"></div>
+          <div class="gc-room__wall gc-room__wall--top" aria-hidden="true"></div>
+          <div class="gc-room__wall gc-room__wall--bottom" aria-hidden="true"></div>
+        </div>
+        <div class="gc-room-dim" data-gc-dim aria-hidden="true"></div>
+      </div>
+      <div class="gc-fg-wrap" data-gc-fg-wrap>
+        <img class="gc-layer gc-layer--fg" data-gc-layer="fg" src="/assets/jacob-foreground.png" alt="" loading="eager" fetchpriority="high" draggable="false" />
+      </div>
+    </div>
+
+    <!-- DESKTOP: caption strip under the photo (cube; face 1 is blank) -->
+    <div class="gc-band gc-band--dcap gc-desktop" data-gc-band>
+      <div class="gc-band__assembly" data-gc-assembly>
+        <div class="gc-band__face gc-face--dcap1" data-gc-face="1"></div>
+        <div class="gc-band__face gc-face--dcap2" data-gc-face="2">
+          <div class="gc-upair gc-upair--center">
+            <hr class="gc-rule gc-rule--above" />
+            <p class="gc-name">Goldsmith &amp; Co. Art Galleries</p>
+            <p class="gc-address">1926 W North Ave, Baltimore, MD</p>
+            <hr class="gc-rule gc-rule--b" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MOBILE: strip below the photo (cube) ============ -->
+  <div class="gc-col gc-col--mbot gc-mobile">
+    <div class="gc-band gc-band--mbot" data-gc-band>
+      <div class="gc-band__assembly" data-gc-assembly>
+
+        <div class="gc-band__face gc-face--m1b" data-gc-face="1">
+          <div class="gc-upair gc-upair--center">
+            <p class="gc-name">Goldsmith &amp; Co. Art Galleries</p>
+            <hr class="gc-rule" />
+            <p class="gc-address">1926 W North Ave, Baltimore, MD</p>
+            <hr class="gc-rule gc-rule--b" />
+          </div>
+          <!-- The upside-down wordmark peeking in at the bottom edge, per
+               the mobile state-1 mockup — cropped by the viewport. -->
+          <p class="gc-mirror" aria-hidden="true">GOLDSMITH<br />&amp; CO</p>
+        </div>
+
+        <div class="gc-band__face gc-face--m2b" data-gc-face="2">
+          <div class="gc-upair gc-upair--center">
+            <p class="gc-name">Goldsmith &amp; Co. Art Galleries</p>
+            <hr class="gc-rule" />
+          </div>
+          <p class="gc-invite-lead gc-invite-lead--m">You&rsquo;re invited</p>
+          <p class="gc-invite-body gc-invite-body--m">to a completely new experience<br />in owning and selling fine art.</p>
+          <hr class="gc-rule gc-rule--solo" />
+          <a class="gc-cta" href="https://goldsmithcoartgalleries.com/welcome#gc-join-list" data-gc-cta>join our list</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="/script.js"></script>
+</body>
+</html>
