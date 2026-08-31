@@ -217,6 +217,7 @@ body {
 }
 .gc-face--d1 .gc-wordmark { font-size: clamp(3.4rem, 7.6vw, 6.6rem); }
 .gc-face--d1 .gc-idblock { margin-top: clamp(2.5rem, 13vh, 7rem); }
+.gc-face--d1 .gc-upair { text-align: center; }
 .gc-face--d1 .gc-name { font-size: clamp(1.35rem, 2.2vw, 1.95rem); }
 .gc-face--d1 .gc-address { font-size: clamp(1.05rem, 1.75vw, 1.55rem); margin-top: 0.9rem; /* = rule margin → rule→text = text→rule */ }
 
