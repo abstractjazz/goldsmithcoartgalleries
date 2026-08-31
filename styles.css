@@ -219,7 +219,7 @@ body {
 .gc-face--d1 .gc-idblock { margin-top: clamp(2.5rem, 13vh, 7rem); }
 .gc-face--d1 .gc-upair { text-align: center; }
 .gc-face--d1 .gc-name { font-size: clamp(1.35rem, 2.2vw, 1.95rem); }
-.gc-face--d1 .gc-address { font-size: clamp(1.05rem, 1.75vw, 1.55rem); margin-top: 0.9rem; /* = rule margin → rule→text = text→rule */ }
+.gc-face--d1 .gc-address { font-size: calc(clamp(.95rem, 1.65vw, 1.45rem) - 3px); margin-top: 0.9rem; /* = rule margin → rule→text = text→rule */ }
 
 .gc-face--d2 {
   justify-content: space-between;
@@ -240,7 +240,7 @@ body {
 .gc-band--dcap { height: clamp(6.5rem, 16vh, 9rem); flex: none; }
 .gc-face--dcap2 { justify-content: center; }
 .gc-face--dcap2 .gc-name { font-size: clamp(1.15rem, 1.75vw, 1.5rem); }
-.gc-face--dcap2 .gc-address { font-size: clamp(0.9rem, 1.35vw, 1.2rem); }
+.gc-face--dcap2 .gc-address { font-size: clamp(0.9rem, 1.05vw, .95rem); margin-top: 0.3rem; }
 .gc-face--dcap2 .gc-rule--above { width: 72%; }
 .gc-face--dcap2 .gc-rule--b { width: 58%; /* 80% of the top rule — taper */ }
 
@@ -466,7 +466,7 @@ body {
    whatever space is left. */
 .gc-face--m1b { justify-content: flex-start; padding-top: 2.4svh; text-align: center; }
 .gc-face--m1b .gc-name { font-size: 5.5vw; }
-.gc-face--m1b .gc-address { font-size: 4.5vw; margin-top: 0.9rem; /* = rule margin → symmetric above/below */ }
+.gc-face--m1b .gc-address { font-size: calc(4.5vw - 2px); margin-top: 0.9rem; /* = rule margin → symmetric above/below */ }
 
 /* Mirrored wordmark: same cut as the top one; ref shows ~1.9 lines
    visible from 84% screen height down, cropped by the bottom edge. */
